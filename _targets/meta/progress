@@ -1,0 +1,17 @@
+name|type|parent|branches|progress
+churn_file|stem|churn_file|0|started
+churn_file|stem|churn_file|0|built
+churn_data|stem|churn_data|0|started
+churn_data|stem|churn_data|0|built
+churn_recipe|stem|churn_recipe|0|started
+churn_recipe|stem|churn_recipe|0|built
+run_relu|stem|run_relu|0|started
+run_relu|stem|run_relu|0|built
+run_softmax|stem|run_softmax|0|started
+run_softmax|stem|run_softmax|0|built
+run_sigmoid|stem|run_sigmoid|0|started
+run_sigmoid|stem|run_sigmoid|0|built
+best_run|stem|best_run|0|started
+best_run|stem|best_run|0|built
+best_model|stem|best_model|0|started
+best_model|stem|best_model|0|built
