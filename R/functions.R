@@ -1,4 +1,6 @@
 
+# DATA LOAD & PREPROCESS ----
+
 # Reads data from churn file
 read_data <- function(churn_file) {
     readr::read_csv(churn_file, col_types = readr::cols()) %>%
@@ -30,6 +32,8 @@ prepare_recipe <- function(churn_splits) {
         recipes::prep()
     return(ret)
 }
+
+# MODELING ----
 
 # Defines the main tuning parameters of the model
 define_model <- function(churn_data, churn_recipe, units1, units2, act1, act2, act3) {
@@ -188,7 +192,7 @@ test_model <- function(
     )
 }
 
-# Retrains a final model
+# Retrains a final model using parameters from a single run
 refit_run <- function(churn_run, churn_data, churn_recipe) {
     fit_model(
         churn_data,
@@ -200,6 +204,8 @@ refit_run <- function(churn_run, churn_data, churn_recipe) {
         churn_run$act3
     )
 }
+
+# PREDICTION ----
 
 predict_new_data <- function(new_data, churn_recipe, churn_model) {
     testing_data <- bake(churn_recipe, new_data)
