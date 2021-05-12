@@ -1,7 +1,8 @@
 
 # Reads data from churn file
 read_data <- function(churn_file) {
-    readr::read_csv(churn_file, col_types = readr::cols())
+    readr::read_csv(churn_file, col_types = readr::cols()) %>%
+        drop_na()
 }
 
 # Split Data

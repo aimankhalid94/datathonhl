@@ -79,8 +79,7 @@ list(
     ## Final Predictions ----
     tar_target(
         name    = predictions,
-        command = refit_run(best_run, churn_data, churn_recipe),
-        format  = "keras"
+        command = predict_new_data(churn_data, churn_recipe, production_model_keras)
     )
 )
 
