@@ -1,24 +1,26 @@
-# LAB
+# BUSINESS SCIENCE LEARNING LABS ----
+# LAB 56: TARGETS KERAS CHURN ----
+# MODULE 01: KERAS ANALYSIS ----
+# **** ----
+
+# BUSINESS OBJECTIVE ----
+# - Predict Customer Churn
 
 # LIBRARIES ----
 
 library(keras)
 library(tidymodels)
-
 library(tidyquant)
 library(tidyverse)
-
 library(reticulate)
 
 
-# BASIC KERAS SETUP ----
+# KERAS SETUP ----
 
-reticulate::conda_binary()
+reticulate::use_condaenv("r-tf", required = TRUE)
+
 reticulate::py_config()
 
-reticulate::conda_install("r-tf", packages = c("keras", "tensorflow", "h5py"))
-
-reticulate::use_condaenv("r-tf")
 
 # 1.0 DATA ----
 
@@ -124,7 +126,10 @@ history <- fit(
 ## Model Diagnostics -----
 print(history)
 
-plot(history) + theme_tq() + scale_color_tq() + scale_fill_tq()
+plot(history) +
+    theme_tq() +
+    scale_color_tq() +
+    scale_fill_tq()
 
 
 # 5.0 PREDICTIONS ----
@@ -153,3 +158,12 @@ estimates_keras_tbl %>% conf_mat(truth, estimate)
 
 ## AUC ----
 estimates_keras_tbl %>% roc_auc(truth, class_prob, event_level = 'second')
+
+## Accuracy ----
+estimates_keras_tbl %>% accuracy(truth, estimate)
+
+# 6.0 CHALLENGES ----
+## What if I want to change Keras Model Parameters? ----
+## How do I track model performance of my best model? ----
+## Solution: Targets ----
+
