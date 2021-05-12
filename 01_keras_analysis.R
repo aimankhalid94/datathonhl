@@ -27,6 +27,8 @@ reticulate::py_config()
 ## Read Data -----
 churn_data_raw <- read_csv("data/churn.csv")
 
+churn_data_raw %>% glimpse()
+
 ## Remove unnecessary data ----
 churn_data_tbl <- churn_data_raw %>%
     select(-customerID) %>%

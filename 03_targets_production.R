@@ -19,5 +19,5 @@ new_data_tbl <- read_csv("data/churn.csv") %>% slice_sample(n = 500)
 predict_new_data(
     new_data     = new_data_tbl,
     churn_recipe = tar_read(churn_recipe),
-    churn_model  = tar_read(best_model)
+    churn_model  = tar_read(production_model_keras)
 )

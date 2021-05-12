@@ -39,12 +39,20 @@ tar_read(churn_file)
 
 tar_read(churn_data)
 
+tar_read(churn_splits)
+
 tar_read(churn_recipe)
+
+tar_read(run_relu)
+tar_read(run_sigmoid)
 
 tar_read(model_performance)
 
 tar_read(best_run)
 
+tar_read(production_model_keras)
+
+tar_read(predictions)
 
 
 
