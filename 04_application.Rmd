@@ -1,0 +1,408 @@
+---
+title: "RHB SME Credit Risk Analytics"
+output:
+  flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r setup}
+
+# Libraries
+library(targets)
+library(keras)
+library(tidymodels)
+library(lime)
+library(correlationfunnel)
+library(flexdashboard)
+library(billboarder)
+library(plotly)
+
+library(tidyverse)
+library(tidyquant)
+
+library(glue)
+
+color_primary = "#78c2ad"
+
+# load data and model
+sme_data_raw   <- tar_read(sme_data)
+model_keras      <- tar_read(production_model_keras)
+train_test_split <- tar_read(sme_splits)
+rec_obj          <- tar_read(sme_recipe)
+
+# Data Setup
+
+# customer scorecard inputs
+# main_vars <- c('tenure', 'Contract', 'InternetService', 'MonthlyCharges', 
+#                'OnlineBackup', 'OnlineSecurity', 'DeviceProtection', 
+#                'TechSupport', 'StreamingMovies', 'PhoneService')
+# commercial_vars <- c('InternetService', 'OnlineBackup', 'OnlineSecurity', 
+#                      'DeviceProtection', 'TechSupport', 'StreamingMovies', 
+#                      'PhoneService')
+# financial_vars <- c('PaymentMethod')
+# customer_feature_vars <- c(main_vars, commercial_vars, financial_vars) %>% unique
+# 
+# # transform original datasset
+# sme_data_raw <- sme_data_raw %>% 
+#   mutate(
+#     tenure_range = case_when(
+#       tenure < 12 ~ '< 1 Yr',
+#       tenure < 24 ~ '1-2 Yrs',
+#       tenure < 36 ~ '2-3 Yrs',
+#       tenure >= 36 ~ 'Over 3 Yrs',
+#       TRUE ~ 'NA'
+#     ),
+#     monthly_charge_range = case_when(
+#       MonthlyCharges < 20 ~ '< 20 per Month',
+#       MonthlyCharges < 50 ~ '20-50 per Month',
+#       MonthlyCharges < 100 ~ '50-100 per Month',
+#       MonthlyCharges >= 100 ~ 'Over 100 per Month',
+#       TRUE ~ 'NA'
+#     )
+#   ) %>%
+#   drop_na() %>%
+#   select(sme, everything())
+# 
+# 
+# # Retrieve train and test sets
+train_tbl_with_ids <- training(train_test_split)
+test_tbl_with_ids  <- testing(train_test_split)
+# 
+train_tbl <- select(train_tbl_with_ids, -ID)
+test_tbl  <- select(test_tbl_with_ids, -ID)
+# 
+x_train_tbl <- bake(rec_obj, new_data = train_tbl) %>% select(-Default_Flag)
+x_test_tbl  <- bake(rec_obj, new_data = test_tbl) %>% select(-Default_Flag)
+# 
+y_train_vec <- ifelse(pull(train_tbl, Default_Flag) == 1, 1, 0)
+y_test_vec  <- ifelse(pull(test_tbl, Default_Flag) == 1, 1, 0)
+# 
+# 
+# 
+# setup lime::model_type() function for keras
+assign("model_type.keras.engine.sequential.Sequential", envir = globalenv(), function(x, ...) {
+  "classification"
+})
+# setup lime::predict_model() function for keras
+assign("predict_model.keras.engine.sequential.Sequential", envir = globalenv(), function(x, newdata, type, ...) {
+  pred <- predict_proba(object = x, x = as.matrix(newdata))
+  data.frame(Yes = pred, No = 1 - pred)
+})
+
+# Test our predict_model() function
+predictions <- predict_model(x = model_keras, newdata = x_test_tbl, type = 'raw') %>%
+    tibble::as_tibble()
+
+# Run lime() on training set
+explainer <- lime::lime(
+    x     = x_train_tbl,
+    model = model_keras,
+    bin_continuous = TRUE
+)
+```
+
+Customer Scorecard {data-orientation=rows}
+=============================================================================
+
+Sidebar {.sidebar}
+-----------------------------------------------------------------------------
+
+#### Customer ID
+
+```{r}
+selectInput('customer_id', NULL, unique(test_tbl_with_ids$ID))
+```
+
+#### Credit Risk
+
+```{r}
+gaugeOutput("churn_risk", width = "220px", height = "130px")
+```
+
+```{r, context="server"}
+output$churn_risk <- renderGauge({
+  
+  req(input$customer_id)
+        
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  test_tbl_with_ids_predictions <- test_tbl_with_ids %>% 
+    mutate(default_prob = predictions$Yes)
+  
+  customer_tbl <- test_tbl_with_ids_predictions %>% 
+    filter(ID == selected_customer_id)
+  
+  gauge(
+    round(customer_tbl$default_prob * 100, digits = 1), 
+    min = 0, 
+    max = 100,
+    gaugeSectors(
+      success = c(0,33),
+      warning = c(33, 66),
+      danger = c(67,100)
+    ),
+    symbol = "%"
+  )
+})
+```
+
+Strategies
+-----------------------------------------------------------------------------
+
+```{css}
+.value-box .value-output,
+.value-box .caption {
+  font-size: 24px;
+}
+```
+
+### Product Approved
+
+```{r}
+valueBoxOutput("main")
+```
+```{r, context="server"}
+output$main <- renderValueBox({
+   req(input$customer_id)
+        
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  customer_tbl <- test_tbl_with_ids %>% 
+      filter(ID == selected_customer_id)
+  
+  if (customer_tbl$Debt_Ratio <= 2) {
+      main_strategy <- 'Offer Short-Term Financing'
+  } else if (customer_tbl$Debt_Ratio <2 && customer_tbl$Debt_Ratio >= 1) {
+      main_strategy <- 'Offer Mincro-Financing'
+  } else {
+      main_stratergy <- 'Recommend A Financing Structure That Better Suited'
+  } 
+  valueBox("Main Strategy", caption = main_strategy, color = "info")
+  
+  
+})
+```
+
+
+### Interest Approved
+
+```{r}
+valueBoxOutput("interest")
+```
+
+```{r, context="server"}
+output$interest <- renderValueBox({
+    req(input$customer_id)
+  
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  customer_index <- test_tbl_with_ids %>% 
+    mutate(rownum = row_number()) %>% 
+    filter(ID == selected_customer_id) %>%
+    select(rownum)
+  
+  
+  x_row_tbl <- x_test_tbl[customer_index$rownum,]
+  x_row_tbl <- x_row_tbl %>% mutate(text=str_glue("{scales::percent(interest_rate, accuracy=0.2)}"))
+  
+  valueBox("Recommended Interest Rate", caption = x_row_tbl$text, color = "lime")
+})
+```
+
+### Limit Approved
+
+```{r}
+valueBoxOutput("limit")
+```
+
+```{r, context="server"}
+output$limit <- renderValueBox({
+    req(input$customer_id)
+  
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  customer_index <- test_tbl_with_ids %>% 
+    mutate(rownum = row_number()) %>% 
+    filter(ID == selected_customer_id) %>%
+    select(rownum)
+  
+  x_row_tbl <- test_tbl_with_ids[customer_index$rownum,]
+  x_row_tbl <- x_row_tbl %>% mutate(text=str_glue("RM {loan_amnt}"))
+  
+  print(x_row_tbl %>% glimpse())
+  valueBox("Approved Credit", caption = x_row_tbl$text, color = "purple")
+})
+```
+Customer Analysis
+-----------------------------------------------------------------------------
+### Contributions to Default (LIME) {data-width=67}
+
+```{r}
+billboarderOutput('customer_explanation')
+```
+
+```{r, context="server"}
+output$customer_explanation <- renderBillboarder({
+     
+  req(input$customer_id)
+  
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  customer_index <- test_tbl_with_ids %>% 
+    mutate(rownum = row_number()) %>% 
+    filter(ID == selected_customer_id) %>%
+    select(rownum)
+  
+  
+  x_row_tbl <- x_test_tbl[customer_index$rownum,]
+  # print(x_row_tbl)
+  
+  # Run explain() on explainer
+  set.seed(42)
+  explanation <- lime::explain(
+      x = x_row_tbl, 
+      explainer = explainer, 
+      n_labels = 1, 
+      n_features = length(x_test_tbl),
+      kernel_width = 0.5
+  )
+  
+  type_pal <- c('Supports', 'Contradicts')
+  explanation$type <- factor(ifelse(sign(explanation$feature_weight) == 
+                                        1, type_pal[1], type_pal[2]), levels = type_pal)
+  description <- paste0(explanation$case, "_", explanation$label)
+  desc_width <- max(nchar(description)) + 1
+  description <- paste0(format(description, width = desc_width), 
+                        explanation$feature_desc)
+  explanation$description <- factor(description, levels = description[order(abs(explanation$feature_weight))])
+  explanation$case <- factor(explanation$case, unique(explanation$case))
+  
+  explanation_plot_df <- explanation %>%
+    mutate(sme_predictor = case_when(
+        (label == 'Yes' & type == 'Supports') | (label == 'No' & type == 'Contradicts') ~ 'More likely to default',
+        (label == 'Yes' & type == 'Contradicts') | (label == 'No' & type == 'Supports') ~ 'Less likely to default'
+    )) %>%
+    arrange(-abs(feature_weight)) %>% 
+    head(10)
+  
+  billboarder() %>%
+    bb_barchart(
+        data = explanation_plot_df,
+        mapping = bbaes(x = feature_desc, y = feature_weight, group = sme_predictor),
+        rotated = TRUE,
+        stacked = TRUE
+    ) %>%
+    bb_colors_manual('Less likely to default' = 'rgba(63, 182, 24, 0.7)', 'More likely to default' = 'rgba(255, 0, 57, 0.7)')
+})
+```
+
+### Customer Details {data-width=33}
+
+```{css}
+table.dataTable thead {
+  display:none;
+}
+table.dataTable tr.selected td, 
+table.dataTable td.selected {
+  background-color: #c3dbf7 !important;
+  border-color: #c3dbf7 !important;
+}
+```
+
+```{r}
+DT::dataTableOutput('customer_info_tbl')
+```
+
+```{r, context="server"}
+output$customer_info_tbl <- DT::renderDataTable({
+        
+  req(input$customer_id)
+  
+  selected_customer_id <- test_tbl_with_ids$ID[1]
+  selected_customer_id <- input$customer_id
+  
+  customer_info <- test_tbl_with_ids %>% 
+      filter(ID == selected_customer_id) %>% 
+      select(-Default_Flag) %>% 
+      # mutate(tenure = paste0(tenure, ifelse(tenure == 1, ' Month', ' Months'))) %>% 
+      # select(customer_feature_vars, TotalCharges) %>% 
+      gather(metric, value)
+  
+  DT::datatable(
+    customer_info, 
+    rownames = NULL, 
+    options = list(
+        dom = 't', 
+        bSort = FALSE, 
+        paging = FALSE,
+        scrollY = "700px"
+    )
+  )
+})
+observeEvent(input$strategy_box_hover, {
+    
+  strategy_hover <- input$strategy_box_hover
+        
+  if (strategy_hover == 'none') {
+    row_indices <- 0
+  } else {
+    strategy_features <- get(paste0(strategy_hover, '_vars'))
+    row_indices <- match(strategy_features, customer_feature_vars)
+  }
+  
+  DT::dataTableProxy('customer_info_tbl') %>% 
+    DT::selectRows(row_indices)
+})
+```
+
+Interest Rate {data-orientation=rows}
+============================================================================
+
+Sidebar {.sidebar}
+----------------------------------------------------------------------------
+
+#### Data Proportion
+
+```{r}
+sliderInput("sample_prop","Proportion of Data Shown:",
+            min = 0, max = 1, value = 0.05, step = 0.01)
+```
+
+Interest Rate Strategies
+-----------------------------------------------------------------------------
+```{r}
+plotlyOutput('interest_rate_plot')
+```
+
+```{r, context="server"}
+output$interest_rate_plot <- renderPlotly({
+    req(input$sample_prop)
+    prediction_tbl <- predictions %>%
+        select(Yes) %>%
+        bind_cols(test_tbl_with_ids) %>%
+        mutate(text = str_glue("Customer ID: {ID}
+                               Prob Default:: {scales::percent(Yes, accuracy=0.1)}"))
+
+    set.seed(123)
+    prediction_sample <- prediction_tbl %>%
+        sample_frac(size = input$sample_prop)
+
+
+    g <- prediction_sample %>%
+    ggplot(aes(interest_rate, Yes, color = Yes)) +
+    geom_point(aes(text = text), size = 4) +
+    geom_smooth(se = F, color = 'black') +
+    theme_minimal() +
+    scale_color_gradient(low = color_primary, high = 'black') +
+    labs(x = "Interest Rate", y = "Default Score (Larger = Worse)")
+
+    ggplotly(g, tooltip = "text") %>%
+        highlight()
+    
+})
+```

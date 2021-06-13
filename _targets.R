@@ -1,12 +1,12 @@
 # BUSINESS SCIENCE LEARNING LABS ----
-# LAB 56: TARGETS KERAS CHURN ----
+# LAB 56: TARGETS KERAS sme ----
 # TAR FILE ----
 # **** ----
 
 library(targets)
 library(tidyverse)
 
-source("R/functions.R")
+source("R/function.R")
 
 tar_option_set(packages = c("keras", "tidymodels", "tidyverse", "tidyquant"))
 
@@ -15,57 +15,58 @@ tar_option_set(packages = c("keras", "tidymodels", "tidyverse", "tidyquant"))
 list(
     ## Identify Data Location ----
     tar_target(
-        name    = churn_file,
-        command = "data/churn.csv",
+        name    = sme_file,
+        command = "data/sme_data.xlsx",
         format  = "file"
     )
     ,
     ## Read Data ----
     tar_target(
-        name    = churn_data,
-        command = read_data(churn_file)
+        name    = sme_data,
+        command = read_data(sme_file)
     )
     ,
     ## Split Train / Test ----
     tar_target(
-        name    = churn_splits,
-        command = split_data(churn_data, prop = 0.8)
+        name    = sme_splits,
+        command = split_data(sme_data, prop = 0.8)
     )
     ,
     ## Make Recipe ----
     tar_target(
-        name    = churn_recipe,
-        command = prepare_recipe(churn_splits)
+        name    = sme_recipe,
+        command = prepare_recipe(sme_splits)
     )
     ,
     ## Try: Relu ----
     tar_target(
         name    = run_relu,
-        command = test_model(act1 = "relu", churn_splits, churn_recipe)
+        command = test_model(act1 = "relu", sme_splits, sme_recipe)
     )
     ,
-    ## Try: Sigmoid ----
-    tar_target(
-        name    = run_sigmoid,
-        command = test_model(act1 = "sigmoid", churn_splits, churn_recipe)
-    )
-    ,
-    ## Try: Softmax ----
-    tar_target(
-        name    = run_softmax,
-        command = test_model(act1 = "softmax", churn_splits, churn_recipe)
-    )
-    ,
+    # ## Try: Sigmoid ----
+    # tar_target(
+    #     name    = run_sigmoid,
+    #     command = test_model(act1 = "sigmoid", sme_splits, sme_recipe)
+    # )
+    # ,
+    # ## Try: Softmax ----
+    # tar_target(
+    #     name    = run_softmax,
+    #     command = test_model(act1 = "softmax", sme_splits, sme_recipe)
+    # )
+    # ,
     ## Try: Softmax units 1: 32 ----
-    tar_target(
-        name    = run_softmax_units1_32,
-        command = test_model(act1 = "softmax", units1 = 32, churn_splits, churn_recipe)
-    )
-    ,
+    # tar_target(
+    #     name    = run_softmax_units1_32,
+    #     command = test_model(act1 = "softmax", units1 = 32, sme_splits, sme_recipe)
+    # )
+    # ,
     ## Get Model Performance ----
     tar_target(
         name    = model_performance,
-        command = bind_rows(run_relu, run_sigmoid, run_softmax, run_softmax_units1_32)
+        command = bind_rows(run_relu)
+        # command = bind_rows(run_relu, run_sigmoid, run_softmax, run_softmax_units1_32)
     )
     ,
     ## Get Best Run ----
@@ -78,14 +79,14 @@ list(
     ## Retrain Model on Full Dataset ----
     tar_target(
         name    = production_model_keras,
-        command = refit_run(best_run, churn_data, churn_recipe),
+        command = refit_run(best_run, sme_data, sme_recipe),
         format  = "keras"
     )
     ,
     ## Final Predictions ----
     tar_target(
         name    = predictions,
-        command = predict_new_data(churn_data, churn_recipe, production_model_keras)
+        command = predict_new_data(sme_data, sme_recipe, production_model_keras)
     )
 )
 

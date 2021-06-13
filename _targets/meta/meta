@@ -1,24 +1,26 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|iteration|parent|children|seconds|warnings|error
-churn_file|stem|bba987b8f5cdfeb5|2a0e07cf6a564849|ef46db3751d8e999|-1681972152|data/churn.csv|t18758.7640641776s|399d4cf39d8e7fbb|984545|file|vector|||2.748||
-churn_data|stem|c07e7c20bdc612d6|7d919294240d6600|06ef5c5513259808|1320859984||t18759.7820777379s|252eabfe5712fcb2|152880|rds|vector|||0.092||
-churn_splits|stem|844231fb9db7f9ec|5e1d457529e5775f|19aa960692c8ab7d|-304825517||t18759.7881763984s|7837475f42adda42|169569|rds|vector|||2.641||
-churn_recipe|stem|b454807e16f1e237|ed972ea03b4441aa|f434b877e2d843c8|1231529804||t18759.7903119156s|4c1772678479f1ae|1505860|rds|vector|||3.056||
-split_data|function|a66ee416889bae2f||||||||||||||
-define_model|function|09e99e33ae5c4985||||||||||||||
-test_estimates|function|a42c03288651d333||||||||||||||
-predict_new_data|function|ffae3724fa361b19||||||||||||||
-prepare_recipe|function|0cecb18b769807f3||||||||||||||
-read_data|function|d92d9adbdf3951cb||||||||||||||
-fit_model|function|b9b21de4f211fdc5||||||||||||||
-test_auc|function|eafa1a1bcc339b42||||||||||||||
-test_accuracy|function|468af414716a5f44||||||||||||||
-refit_run|function|f45d8890f2a19aee||||||||||||||
-test_model|function|6f95087fae0bbbf8||||||||||||||
-run_relu|stem|064395bdb93d4ff5|f5f42f7c49733a22|e21365b9cc15d2c7|1257026008||t18759.7947471217s|e102fd4cf0167a36|208|rds|vector|||16.097||
-run_softmax|stem|512d06b3fd3043f0|1913e495eddadc7c|e21365b9cc15d2c7|667531934||t18759.7963567974s|0cca50742c16a705|215|rds|vector|||15.405||
-run_softmax_units1_32|stem|8a87c6fce54c96c9|f0830c461fed6af7|e21365b9cc15d2c7|-837334807||t18759.8055171998s|9208ff4405c91373|218|rds|vector|||15.564||
-run_sigmoid|stem|2cd83f735cb7a68c|9ff55b716acf9084|e21365b9cc15d2c7|164679453||t18759.7964491956s|a747ae66a3258038|209|rds|vector|||7.965||
-model_performance|stem|c007a7677ff876f7|aaf0118438d8a650|9156b58abe6e2775|667574329||t18759.8055173799s|175116648b33090c|292|rds|vector|||0.002||
-best_run|stem|2cd83f735cb7a68c|79e4c58a4d0db901|44b2d6d7a5af8b6f|-2100651149||t18759.8055175062s|a747ae66a3258038|209|rds|vector|||0.004||
-production_model_keras|stem|7d9f48ec7c1de56e|4743977fe2432c01|56603546cfbe6b75|-2028344000||t18759.8011839101s|cba11e78ff9aaa21|43016|keras|vector|||16.319||
-predictions|stem|362a6dd83589e53c|0ca84a6987728da9|726048e4dabcc9fc|-1904676269||t18759.8024765883s|6981ae970cfbbf00|32301|rds|vector|||1.642||
+summ|function|725b50cbf04a3ed2||||||||||||||
+data|stem|32f18aba67572d62|4d28b3ae61066c9f|15669340fa0be499|1588979285||t18790.2999852448s|b760de6db9e25472|457|rds|vector|||0.27||
+summary|stem|c158ae7c377b1ca3|504e748dde9ca536|2bfdba80350dfe58|760118442||t18790.2999856865s|b6284359ec2a2750|125|rds|vector|||0||
+sme_file|stem|3f7431beafaa143c|5cf097126f3e7b53|ef46db3751d8e999|693641756|data/sme_data.xlsx|t18790.285171926s|00e568951334cfb0|1430816|file|vector|||2.72||
+sme_data|stem|b963d5ed2b473ddc|ad113c97f20f3a58|7545da6c7017ac7f|-1793977125||t18790.3078567697s|039213216f649121|531129|rds|vector|||0.25||
+sme_splits|stem|a2a8bc108d791525|52bc1430a27d2f9f|f233b9f16c3aaacc|1913207598||t18790.3078582148s|e7e742829e6bd7aa|544999|rds|vector|||0.02||
+sme_recipe|stem|ced4c6aca592a5b0|db81078c691384fe|8b10e57c31cd6129|37709542||t18790.3078666152s|6ef29e8a056a208a|3788095|rds|vector|||0.23||
+run_softmax|stem||0238e634cfa8a73d|578419da6058b515|667531934||||0|rds|vector|||7.24|Unknown levels in f 1|Problem with summarise column .estimate.34mi39m .estimate  metric_fntruth  truth, estimate  estimate, na_rm  na
+run_sigmoid|stem||93cdf205879a6c73|578419da6058b515|164679453||||0|rds|vector|||14.4|Unknown levels in f 1|Problem with summarise column .estimate.34mi39m .estimate  metric_fntruth  truth, estimate  estimate, na_rm  na
+split_data|function|f1c067d43f0727ce||||||||||||||
+define_model|function|9c347b2d17464a56||||||||||||||
+test_estimates|function|e37db6953256f24a||||||||||||||
+predict_new_data|function|f6a2a03c414c9ec2||||||||||||||
+prepare_recipe|function|a437fb634e2d5946||||||||||||||
+read_data|function|710545516b9454a1||||||||||||||
+fit_model|function|9837cc7fa8925357||||||||||||||
+test_auc|function|89dbf3929cd1dcc6||||||||||||||
+test_accuracy|function|3d7b58af48d26f75||||||||||||||
+refit_run|function|3693a320919364e5||||||||||||||
+test_model|function|c61a6f597bf1c79b||||||||||||||
+run_relu|stem|0d197033c2e83238|db8a45dac6bd7768|578419da6058b515|1257026008||t18790.3080600011s|a52a1b9948dbd8e0|209|rds|vector|||16.69|path1C\Users\muhamadhafiz.hussin\Anaconda3\envs\myenv1python.exe The system cannot find the file specified|
+model_performance|stem|0d197033c2e83238|45e19f9e014ab438|677b24a0537eacbf|667574329||t18790.3131802273s|a52a1b9948dbd8e0|209|rds|vector|||2.31||
+best_run|stem|0d197033c2e83238|79e4c58a4d0db901|65ccd625ae1a1b82|-2100651149||t18790.3131807331s|a52a1b9948dbd8e0|209|rds|vector|||0.01||
+production_model_keras|stem|5d244699b2cdc9ea|8a08fba8e96f37b7|5d687dd1cf80f1f8|-2028344000||t18790.3133363225s|6402201fcc765e5d|47616|keras|vector|||13.24|path1C\Users\muhamadhafiz.hussin\Anaconda3\envs\myenv1python.exe The system cannot find the file specified|
+predictions|stem|102aa66165b01616|d05b19a06dbb98ee|27cf796fe9dfc4a1|-1904676269||t18790.3133434127s|b7d223273c554a4f|26013|rds|vector|||0.44||

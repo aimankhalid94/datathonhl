@@ -1,7 +1,9 @@
 name|type|parent|branches|progress
-run_softmax_units1_32|stem|run_softmax_units1_32|0|started
-run_softmax_units1_32|stem|run_softmax_units1_32|0|built
 model_performance|stem|model_performance|0|started
 model_performance|stem|model_performance|0|built
 best_run|stem|best_run|0|started
 best_run|stem|best_run|0|built
+production_model_keras|stem|production_model_keras|0|started
+production_model_keras|stem|production_model_keras|0|built
+predictions|stem|predictions|0|started
+predictions|stem|predictions|0|built
